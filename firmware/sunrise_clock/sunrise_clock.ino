@@ -67,6 +67,7 @@ RTC_DS3231       rtc;
 
 String deviceName   = DEFAULT_DEVICE_NAME;
 bool   colonVisible = true;
+CRGB   clockColor   = CRGB(255, 140, 0);
 unsigned long lastColonToggle = 0;
 unsigned long lastNTP         = 0;
 bool   apMode = false;
@@ -584,6 +585,53 @@ void setupNormalRoutes() {
     server.send(200, "application/json", "{\"status\":\"ok\"}");
   });
 
+
+
+// GET /time
+  server.on("/time", HTTP_GET, []() {
+    DateTime now = rtc.now();
+    StaticJsonDocument<64> doc;
+    doc["h"] = now.hour();
+    doc["m"] = now.minute();
+    doc["s"] = now.second();
+    String out;
+    serializeJson(doc, out);
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(200, "application/json", out);
+  });
+
+  server.on("/time", HTTP_OPTIONS, []() {
+    server.sendHeader("Access-Control-Allow-Origin",  "*");
+    server.sendHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+    server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+    server.send(204);
+  });
+
+  // POST /color
+  server.on("/color", HTTP_POST, []() {
+    if (!server.hasArg("plain")) { server.send(400); return; }
+    StaticJsonDocument<64> doc;
+    deserializeJson(doc, server.arg("plain"));
+    int r = doc["r"] | 255;
+    int g = doc["g"] | 140;
+    int b = doc["b"] | 0;
+    clockColor = CRGB(r, g, b);
+    String state = "{\"type\":\"led_state\",\"leds\":" + buildLedStateJson() + "}";
+    ws.broadcastTXT(state);
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
+  });
+
+  server.on("/color", HTTP_OPTIONS, []() {
+    server.sendHeader("Access-Control-Allow-Origin",  "*");
+    server.sendHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+    server.send(204);
+  });
+
+
+
+
   // POST /wifi/forget — wipes credentials, reboots to AP mode
   server.on("/wifi/forget", HTTP_POST, []() {
     prefs.begin("clock", false);
@@ -687,5 +735,5 @@ void loop() {
 
   // Update display from RTC
   DateTime now = rtc.now();
-  displayTime(now.hour(), now.minute(), CRGB(255, 140, 0));
+displayTime(now.hour(), now.minute(), clockColor);
 }

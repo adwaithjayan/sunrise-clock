@@ -2,6 +2,7 @@
 import { useClock } from "@/lib/useClock";
 import ConnectionBar from "@/components/ConnectionBar";
 import OtaPanel from "@/components/OtaPanel";
+import ClockDisplay from "@/components/ClockDisplay";
 
 export default function Home() {
   const hook = useClock();
@@ -17,7 +18,7 @@ export default function Home() {
 
       {state.connected && state.ip && (
         <>
-          {/* Clock UI goes here as you build it */}
+          <ClockDisplay ip={state.ip} />
           <OtaPanel ip={state.ip} />
         </>
       )}
