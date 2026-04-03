@@ -629,7 +629,24 @@ void setupNormalRoutes() {
     server.send(204);
   });
 
+server.on("/brightness", HTTP_POST, []() {
+  if (!server.hasArg("plain")) { server.send(400); return; }
+  StaticJsonDocument<64> doc;
+  deserializeJson(doc, server.arg("plain"));
+  int val = doc["value"] | 80;
+  val = constrain(val, 5, 255);
+  FastLED.setBrightness(val);
+  FastLED.show();
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "application/json", "{\"status\":\"ok\"}");
+});
 
+server.on("/brightness", HTTP_OPTIONS, []() {
+  server.sendHeader("Access-Control-Allow-Origin",  "*");
+  server.sendHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+  server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+  server.send(204);
+});
 
 
   // POST /wifi/forget — wipes credentials, reboots to AP mode
