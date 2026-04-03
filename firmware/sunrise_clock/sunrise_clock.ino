@@ -638,9 +638,12 @@ void setup() {
   FastLED.show();
 
   // RTC
-  Wire.begin(21, 22);
-  if (!rtc.begin()) Serial.println("RTC not found — using NTP only");
-
+ Wire.begin(21, 22);
+if (!rtc.begin()) {
+  Serial.println("RTC not found — using NTP only");
+} else {
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));  // ← add this
+}
   // Try connecting with saved credentials
   bool connected = connectWiFi();
 

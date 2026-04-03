@@ -1,29 +1,25 @@
 "use client";
-import { useState, useEffect } from "react";
 import { useClock } from "@/lib/useClock";
-import OtaPanel from "@/components/OtaPanel";
 import ConnectionBar from "@/components/ConnectionBar";
+import OtaPanel from "@/components/OtaPanel";
 
 export default function Home() {
-  const { state, discover, checkSavedIp } = useClock();
-
-  useEffect(() => {
-    checkSavedIp();
-  }, []);
+  const hook = useClock();
+  const { state } = hook;
 
   return (
     <main className="max-w-xl mx-auto p-6 flex flex-col gap-6">
       <h1 className="text-2xl font-bold text-amber-400 tracking-widest">
         🌅 SUNRISE CLOCK
       </h1>
-      <ConnectionBar onConnected={() => {}} />
+
+      <ConnectionBar hook={hook} />
+
       {state.connected && state.ip && (
-        <OtaPanel ip={state.ip} />
-      )}
-      {!state.connected && (
-        <p className="text-gray-500 text-sm">
-          Connect to your clock to see controls.
-        </p>
+        <>
+          {/* Clock UI goes here as you build it */}
+          <OtaPanel ip={state.ip} />
+        </>
       )}
     </main>
   );
