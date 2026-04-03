@@ -1,0 +1,22 @@
+# Arduino
+firmware/**/*.bin
+firmware/**/*.elf
+firmware/**/*.hex
+firmware/**/build/
+firmware/**/.cache/
+
+# Next.js
+web/.next/
+web/out/
+web/node_modules/
+web/.vercel/
+web/.env.local
+web/.env*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
