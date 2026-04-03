@@ -14,7 +14,7 @@ const DIG_H   = 4.0;
 const GAP     = 0.6; // gap between digits
 
 // segments for one digit at origin (a,b,c,d,e,f,g)
-function digitSegments(ox: number, oy: number) {
+function digitSegments(ox: number, oy: number = 0) {
   return [
     // a — top horizontal
     { x: ox + 0.2,           y: oy + DIG_H - SEG_H_H, w: SEG_H_W, h: SEG_H_H },
