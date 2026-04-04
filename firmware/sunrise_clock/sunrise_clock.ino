@@ -11,10 +11,6 @@
 #include <time.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
-#include <BLEDevice.h>
-#include <BLEServer.h>
-#include <BLEUtils.h>
-#include <BLE2902.h>
 
 // ─── Firmware version ────────────────────────────────────────────────────────
 #define FIRMWARE_VERSION "v0.1.0"
@@ -43,10 +39,6 @@ CRGB leds[NUM_LEDS];
 #define IND_WIFI    1
 #define IND_BATTERY 2
 #define IND_ALARM   3
-
-// ─── BLE ─────────────────────────────────────────────────────────────────────
-#define BLE_SERVICE_UUID    "12345678-1234-1234-1234-123456789abc"
-#define BLE_CHAR_UUID       "abcd1234-ab12-ab12-ab12-abcdef123456"
 
 int digit1Map[7] = {8,  7,  6,  5,  4,  9,  10};
 int digit2Map[7] = {15, 14, 13, 12, 11, 16, 17};
@@ -694,39 +686,10 @@ void onWsEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length) {
   }
 }
 
-
-void startBLE() {
-  BLEDevice::init(deviceName.c_str());
-  BLEServer*      bleServer  = BLEDevice::createServer();
-  BLEService*     bleService = bleServer->createService(BLE_SERVICE_UUID);
-  BLECharacteristic* bleChar = bleService->createCharacteristic(
-    BLE_CHAR_UUID,
-    BLECharacteristic::PROPERTY_READ |
-    BLECharacteristic::PROPERTY_NOTIFY
-  );
-  bleChar->addDescriptor(new BLE2902());
-
-  // Value is JSON: {"name":"Sunrise-Clock","ip":"192.168.1.x","version":"v0.1.0"}
-  StaticJsonDocument<128> doc;
-  doc["name"]    = deviceName;
-  doc["ip"]      = WiFi.localIP().toString();
-  doc["version"] = FIRMWARE_VERSION;
-  String payload;
-  serializeJson(doc, payload);
-  bleChar->setValue(payload.c_str());
-
-  bleService->start();
-  BLEAdvertising* adv = BLEDevice::getAdvertising();
-  adv->addServiceUUID(BLE_SERVICE_UUID);
-  adv->setScanResponse(true);
-  adv->setMinPreferred(0x06);
-  BLEDevice::startAdvertising();
-  Serial.println("BLE advertising as: " + deviceName);
-}
-
 // ─── Setup ───────────────────────────────────────────────────────────────────
 void setup() {
   Serial.begin(115200);
+
   // Load saved device name
   prefs.begin("clock", true);
   String saved = prefs.getString("deviceName", DEFAULT_DEVICE_NAME);
@@ -764,7 +727,6 @@ if (!rtc.begin()) {
   ws.onEvent(onWsEvent);
 
   Serial.println("Ready at http://" + WiFi.localIP().toString());
-  startBLE();
 }
 
 // ─── Loop ────────────────────────────────────────────────────────────────────
